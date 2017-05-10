@@ -5,8 +5,8 @@ defmodule Blitzy.Mixfile do
     [app: :blitzy,
      version: "0.0.1",
      elixir: "~> 1.1",
-     escript: escript,
-     deps: deps]
+     escript: [main_module: Blitzy.CLI],
+     deps: deps()]
   end
 
   def escript do
