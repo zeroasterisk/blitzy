@@ -5,8 +5,10 @@ defmodule Blitzy.Worker do
   def start(url, caller, func \\ &HTTPoison.get/1) do
     {timestamp, response} = Duration.measure(fn -> func.(url) end)
     caller
-    |> send({self(),
-      handle_response({Duration.to_milliseconds(timestamp), response})})
+    |> send({
+      self(),
+      handle_response({Duration.to_milliseconds(timestamp), response})
+    })
   end
 
   defp handle_response({msecs, {:ok, %HTTPoison.Response{status_code: code}}})

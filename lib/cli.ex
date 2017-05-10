@@ -1,5 +1,5 @@
 defmodule Blitzy.CLI do
-  alias Blitzy.TasksSupervisor
+  # alias Blitzy.TasksSupervisor
   require Logger
 
   def main(args) do
@@ -21,29 +21,9 @@ defmodule Blitzy.CLI do
 
   defp process_options(options, nodes) do
     case options do
-      {[requests: n], [url], []} ->
-        do_requests(n, url, nodes)
-
-      _ ->
-        do_help()
-
+      {[requests: n], [url], []} -> Blitzy.do_requests(n, url, nodes)
+      _ -> do_help()
     end
-  end
-
-  defp do_requests(n_requests, url, nodes) do
-    Logger.info "Pummelling #{url} with #{n_requests} requests"
-
-    total_nodes  = Enum.count(nodes)
-    req_per_node = div(n_requests, total_nodes)
-
-    nodes
-    |> Enum.flat_map(fn node ->
-         1..req_per_node |> Enum.map(fn _ ->
-           Task.Supervisor.async({TasksSupervisor, node}, Blitzy.Worker, :start, [url])
-         end)
-       end)
-    |> Enum.map(&Task.await(&1, :infinity))
-    |> Blitzy.parse_results
   end
 
   defp do_help do

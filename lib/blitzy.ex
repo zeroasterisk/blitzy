@@ -1,9 +1,34 @@
 defmodule Blitzy do
   use Application
+  require Logger
 
   def start(_type, _args) do
     Blitzy.Supervisor.start_link(:ok)
   end
+
+  def do_requests(n_requests, url, nodes) do
+    me = self()
+    IO.puts "Pummelling #{url} with #{n_requests} requests from #{inspect me}"
+    Logger.info "Pummelling #{url} with #{n_requests} requests from #{inspect me}"
+
+    total_nodes  = Enum.count(nodes)
+    req_per_node = div(n_requests, total_nodes)
+
+    nodes
+    |> Enum.flat_map(fn node ->
+         1..req_per_node |> Enum.map(fn _ ->
+           Task.Supervisor.async(
+            {TasksSupervisor, node},
+            Blitzy.Worker,
+            :start,
+            [url, me]
+          )
+         end)
+       end)
+    |> Enum.map(&Task.await(&1, :infinity))
+    |> parse_results
+  end
+
 
   # def run(n_workers, url) when n_workers > 0 do
   #   worker_fun = fn -> Blitzy.Worker.start(url) end
